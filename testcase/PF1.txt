@@ -1,0 +1,8 @@
+DATE: 04/12/2026
+PATIENT INFO: 28yo male.
+CHIEF COMPLAINT: Routine follow-up for medication refill. 
+PAST PSYCH HISTORY: Diagnosed with Asperger's Disorder in 2011 by Dr. Smith. 
+CURRENT PRESENTATION: Patient reports doing well at his software engineering job. Still struggles with reading social cues during office meetings, which causes mild anxiety. Maintains rigid daily routines. 
+MEDICATIONS: Fluoxetine 20mg for anxiety.
+DIAGNOSIS ON FILE: Asperger's Syndrome.
+PLAN: Continue current SSRI. Follow up in 6 months.

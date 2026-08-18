@@ -1,0 +1,7 @@
+DATE: 06/30/2026
+PATIENT INFO: 50yo male.
+PAST PSYCH HISTORY: Diagnosed with Hypochondriasis in 2010. 
+CURRENT PRESENTATION: Patient returns to clinic highly agitated, convinced he has a rare neurological disease. Has seen 4 specialists this year. When asked about his pain, patient confirms he has ZERO physical symptoms—no pain, no dizziness, no weakness. It is purely severe anxiety about the *idea* of being sick.
+MEDICATIONS: Citalopram 10mg.
+DIAGNOSIS ON FILE: Hypochondria. 
+PLAN: Reassure patient (again) that labs are normal.
