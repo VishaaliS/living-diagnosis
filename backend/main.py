@@ -24,7 +24,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import AzureOpenAI
-
+from clinical_graph import clinical_graph_app
 # ─────────────────────────────────────────────────────────────────
 # ENVIRONMENT & AZURE CLIENT SETUP
 # ─────────────────────────────────────────────────────────────────
