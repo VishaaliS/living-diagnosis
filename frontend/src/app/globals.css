@@ -46,6 +46,15 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-primary: #0878B9;
+  --color-cyan: #29A9E8;
+  --color-sky: #67C9F5;
+  --color-soft: #EAF6FC;
+  --color-lime: #D7FF3F;
+  --color-dark: #0B0B0B;
+  --color-grayLight: #F3F4F6;
+  --color-borderBlue: rgba(8, 120, 185, 0.1);
+  --shadow-blueSoft: 0 10px 40px rgba(0, 100, 180, 0.08);
 }
 
 :root {
@@ -241,4 +250,56 @@
 }
 .font-body {
   font-family: var(--font-inter, "Inter", sans-serif);
-}
+}
+
+/* ── Analysis Page ───────────────────────────────────────────────── */
+
+/* Custom textarea scrollbar */
+.analysis-textarea::-webkit-scrollbar {
+  width: 8px;
+}
+.analysis-textarea::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+.analysis-textarea::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.analysis-textarea::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Timeline helpers */
+.timeline-line {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, #0878b9, #29a9e8, #cbd5e1);
+  z-index: 0;
+}
+
+.timeline-point {
+  position: relative;
+  z-index: 10;
+}
+
+/* Analysis card base */
+.analysis-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(8, 120, 185, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 100, 180, 0.08);
+}
+
+/* Score count-up animation keyframe */
+@keyframes scoreIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.score-animate {
+  animation: scoreIn 0.4s ease-out forwards;
+}
+
