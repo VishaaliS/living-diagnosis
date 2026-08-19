@@ -1,13 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import { AlertCircle, AlertTriangle, Info, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Info, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { apiFetch, getToken, clearToken, getPatientId } from '@/lib/api';
+import DiagnosisTimeline from '@/components/DiagnosisTimeline';
+
+// Fallback map: guideline entry_id → the year that change was published.
+// Used when the backend doesn't return change_year on the match object.
+const CHANGE_YEAR_MAP: Record<string, number> = {
+  'DSM5-001': 2013, // Asperger's → ASD, DSM-5 released May 2013
+  'DSM5-002': 2013, // Hypochondriasis → Illness Anxiety Disorder
+  'DSM5-003': 2013, // ADD → ADHD unified
+  'ICD11-001': 2022, // ICD-11 came into effect
+};
+
+function resolveChangeYear(
+  guidelineMatch: { change_year?: number; entry_id?: string } | null
+): number {
+  if (!guidelineMatch) return 2013;
+  if (guidelineMatch.change_year) return guidelineMatch.change_year;
+  if (guidelineMatch.entry_id && CHANGE_YEAR_MAP[guidelineMatch.entry_id]) {
+    return CHANGE_YEAR_MAP[guidelineMatch.entry_id];
+  }
+  return 2013; // safe default: DSM-5 era
+}
 
 const DEMO_TEXTS = {
   aspergers: "Patient notes, June 2011. Diagnosed with Asperger's Disorder per DSM-IV-TR criteria. Patient shows difficulty in social communication, intensely focused interest in train schedules, no significant early language delay noted. Recommend annual follow-up. No re-evaluation has occurred since this diagnosis.",
@@ -17,10 +41,16 @@ const DEMO_TEXTS = {
 };
 
 export default function LivingDiagnosisDashboard() {
+  const router = useRouter();
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(!!getToken());
+  }, []);
 
   const handleAnalyze = async () => {
     if (!notes.trim()) return;
@@ -29,20 +59,26 @@ export default function LivingDiagnosisDashboard() {
     setResult(null);
 
     try {
-      const response = await fetch("http://localhost:8000/api/analyze", {
+      const data = await apiFetch<any>("/api/analyze", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ patient_notes: notes }),
       });
-      
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-      
-      const data = await response.json();
       setResult(data);
+
+      // Silently auto-save history if logged in
+      const token = getToken();
+      if (token && data && data.extracted && data.extracted.diagnosis) {
+        apiFetch("/analysis/history", {
+          method: "POST",
+          body: JSON.stringify({
+            user_id: token,
+            patient_id: getPatientId() || undefined,
+            diagnosis: data.extracted.diagnosis,
+            freshness_score: data.score,
+            guideline_matched: data.guideline_match?.matched || false
+          })
+        }).catch(err => console.error("Silently failed to save analysis history:", err));
+      }
     } catch (err: any) {
       setError(err.message || "Failed to connect to backend.");
     } finally {
@@ -69,6 +105,30 @@ export default function LivingDiagnosisDashboard() {
             <div>
               <h1 className="text-4xl font-bold tracking-tight text-slate-900">Living Diagnosis</h1>
               <p className="text-lg text-slate-500 mt-1">A diagnosis is a hypothesis. We keep it honest.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {isLoggedIn ? (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push('/dashboard')}
+                  >
+                    Go to Dashboard
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { clearToken(); setIsLoggedIn(false); }}
+                  >
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Link href="/login">
+                  <Button variant="outline" size="sm">Sign In</Button>
+                </Link>
+              )}
             </div>
           </div>
           
@@ -196,12 +256,22 @@ export default function LivingDiagnosisDashboard() {
                             )) || "None extracted"}
                           </div>
                         </div>
+                        {result.extracted?.medications && result.extracted.medications.length > 0 && (
+                          <div className="col-span-2">
+                            <span className="text-slate-500 block mb-1">Medications</span>
+                            <div className="flex flex-wrap gap-1">
+                              {result.extracted.medications.map((m: string, i: number) => (
+                                <Badge key={i} variant="outline" className="bg-slate-50">{m}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Guideline Match */}
-                  {result.guideline_match && (
+                  {result.guideline_match && result.guideline_match.matched === true ? (
                     <Card className="border-blue-200 bg-blue-50/50 shadow-sm">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-lg flex items-center gap-2 text-blue-900">
@@ -227,6 +297,38 @@ export default function LivingDiagnosisDashboard() {
                         </p>
                       </CardContent>
                     </Card>
+                  ) : result.guideline_match && result.guideline_match.matched === false ? (
+                    <Card className="border-green-200 bg-green-50/50 shadow-sm">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg flex items-center gap-2 text-green-900">
+                          <CheckCircle2 className="w-5 h-5 text-green-600" />
+                          Guideline Match
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <p className="text-sm font-medium text-green-800 flex items-center gap-2">
+                          ✓ No major guideline changes found for this diagnosis
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : null}
+
+                  {/* ── Diagnosis Timeline — only when guideline matched ── */}
+                  {result.guideline_match?.matched === true &&
+                    result.extracted?.diagnosis_year && (
+                    <DiagnosisTimeline
+                      diagnosisYear={result.extracted.diagnosis_year}
+                      diagnosisLabel={
+                        result.extracted.diagnosis ?? 'Unknown Diagnosis'
+                      }
+                      changeYear={resolveChangeYear(result.guideline_match)}
+                      changeLabel={
+                        result.guideline_match.change_summary ??
+                        result.guideline_match.new_label ??
+                        'Guideline updated'
+                      }
+                      currentYear={2026}
+                    />
                   )}
 
                   {/* Explanation */}
@@ -248,10 +350,11 @@ export default function LivingDiagnosisDashboard() {
                       How was this calculated?
                     </summary>
                     <div className="mt-3 p-4 bg-slate-100 rounded-md space-y-2 font-mono text-xs text-slate-600">
-                      <div>Base Score: 100</div>
-                      <div>Guideline Penalty: -{result.guideline_match ? Math.round(result.guideline_match.severity_weight * 40) : 0}</div>
-                      <div>Semantic Drift Penalty: -{Math.round((result.semantic_drift_score || 0) * 25)}</div>
-                      <div>Time Penalty: Appx -{100 - (result.freshness_score || 0) - (result.guideline_match ? Math.round(result.guideline_match.severity_weight * 40) : 0) - Math.round((result.semantic_drift_score || 0) * 25)}</div>
+                      <div>Base Score: {result.score_breakdown?.starting_score ?? 100}</div>
+                      <div>Guideline Change: {Math.abs(result.score_breakdown?.guideline_penalty || 0)} points</div>
+                      <div>Semantic Drift: {Math.abs(result.score_breakdown?.drift_penalty || 0)} points</div>
+                      <div>Time Passed: {Math.abs(result.score_breakdown?.time_penalty || 0)} points</div>
+                      <div>Years Since Diagnosis: {result.score_breakdown?.years_since_diagnosis || 0}</div>
                       <div className="pt-2 border-t border-slate-200 font-bold">Final Score: {result.freshness_score}</div>
                     </div>
                   </details>
