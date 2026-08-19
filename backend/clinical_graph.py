@@ -69,7 +69,8 @@ def redactor_agent(state: ClinicalState) -> dict:
     LLM Agent 0: Privacy & Anonymization.
     Scrubs PII before any clinical processing happens.
     """
-safe_notes = state.get("redacted_notes", state["raw_notes"])    
+    raw_notes = state["raw_notes"]
+    safe_notes = state.get("redacted_notes", raw_notes)    
     if not AZURE_CONFIGURED or client is None:
         return {"redacted_notes": raw_notes}
         
@@ -84,7 +85,7 @@ safe_notes = state.get("redacted_notes", state["raw_notes"])
             model=AZURE_OPENAI_DEPLOYMENT,
             messages=[
                 {"role": "system", "content": system_prompt},
-               {"role": "user", "content": safe_notes},
+                {"role": "user", "content": safe_notes},
             ],
             temperature=0, 
         )

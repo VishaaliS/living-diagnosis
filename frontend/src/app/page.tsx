@@ -12,6 +12,7 @@ import 'react-circular-progressbar/dist/styles.css';
 import { Info, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { apiFetch, getToken, clearToken, getPatientId } from '@/lib/api';
 import DiagnosisTimeline from '@/components/DiagnosisTimeline';
+import ChatWidget from '@/components/ChatWidget';
 
 // Fallback map: guideline entry_id → the year that change was published.
 // Used when the backend doesn't return change_year on the match object.
@@ -74,7 +75,7 @@ export default function LivingDiagnosisDashboard() {
             user_id: token,
             patient_id: getPatientId() || undefined,
             diagnosis: data.extracted.diagnosis,
-            freshness_score: data.score,
+            freshness_score: data.freshness_score,
             guideline_matched: data.guideline_match?.matched || false
           })
         }).catch(err => console.error("Silently failed to save analysis history:", err));
@@ -364,6 +365,9 @@ export default function LivingDiagnosisDashboard() {
           </div>
         )}
       </div>
+
+      {/* ── AI Chatbot Widget — always available, gets richer context after analysis ── */}
+      <ChatWidget analysisContext={result} page="analysis" />
     </div>
   );
 }

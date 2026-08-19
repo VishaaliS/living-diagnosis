@@ -128,3 +128,117 @@
     @apply font-sans;
   }
 }
+
+/* ── Living Diagnosis Design System ─────────────────────────────── */
+
+:root {
+  /* Brand colors */
+  --ld-primary: #005e94;
+  --ld-secondary: #00658f;
+  --ld-tertiary: #4f6100;
+  --ld-background: #fcf8f8;
+  --ld-surface: #fcf8f8;
+  --ld-surface-container: #f0edec;
+  --ld-surface-container-low: #f6f3f2;
+  --ld-surface-container-high: #ebe7e7;
+  --ld-surface-container-highest: #e5e2e1;
+  --ld-surface-container-lowest: #ffffff;
+  --ld-on-surface: #1c1b1b;
+  --ld-on-surface-variant: #404750;
+  --ld-on-primary: #ffffff;
+  --ld-on-secondary: #ffffff;
+  --ld-on-background: #1c1b1b;
+  --ld-outline: #707881;
+  --ld-outline-variant: #c0c7d2;
+  --ld-primary-container: #0878b9;
+  --ld-secondary-container: #49befe;
+  --ld-error: #ba1a1a;
+  --ld-error-container: #ffdad6;
+  --ld-on-error-container: #93000a;
+  --ld-tertiary-container: #657b00;
+  --ld-on-tertiary-container: #f4ffc5;
+  --ld-inverse-surface: #313030;
+  --ld-inverse-on-surface: #f3f0ef;
+  --ld-inverse-primary: #96ccff;
+  --ld-surface-tint: #00639a;
+
+  /* Font families */
+  --font-heading: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+  --font-body: var(--font-inter, "Inter", sans-serif);
+}
+
+/* Utility classes matching the design HTML */
+.glass-card {
+  background-color: #ffffff;
+  box-shadow: 0 10px 40px rgba(0, 100, 180, 0.08);
+  border-radius: 24px;
+}
+
+.soft-card {
+  background-color: #eaf6fc;
+  border-radius: 24px;
+}
+
+.btn-primary {
+  background-color: #005e94;
+  color: white;
+  border-radius: 9999px;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: transform 0.15s, opacity 0.15s;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-outline {
+  border: 1px solid #005e94;
+  color: #005e94;
+  background: transparent;
+  border-radius: 9999px;
+  padding: 6px 24px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-outline:hover {
+  background-color: rgba(0, 94, 148, 0.06);
+}
+
+.btn-ai {
+  background-color: #d7ff3f;
+  color: #0b0b0b;
+  border-radius: 9999px;
+  padding: 12px 32px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-ai:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.input-field {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid rgba(103, 201, 245, 0.3);
+  background: white;
+  padding: 12px 16px;
+  outline: none;
+  font-family: var(--font-body);
+}
+.input-field:focus {
+  border-color: rgba(0, 94, 148, 0.4);
+  box-shadow: 0 0 0 3px rgba(0, 94, 148, 0.08);
+}
+
+/* Font helpers */
+.font-heading {
+  font-family: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+}
+.font-body {
+  font-family: var(--font-inter, "Inter", sans-serif);
+}

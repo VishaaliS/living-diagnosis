@@ -6,3 +6,5 @@ pandas
 python-multipart
 pydantic
 numpy
+langgraph
+PyPDF2
