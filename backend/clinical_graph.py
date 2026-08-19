@@ -69,7 +69,8 @@ def redactor_agent(state: ClinicalState) -> dict:
     LLM Agent 0: Privacy & Anonymization.
     Scrubs PII before any clinical processing happens.
     """
-safe_notes = state.get("redacted_notes", state["raw_notes"])    
+    raw_notes = state["raw_notes"]
+    
     if not AZURE_CONFIGURED or client is None:
         return {"redacted_notes": raw_notes}
         
@@ -84,7 +85,7 @@ safe_notes = state.get("redacted_notes", state["raw_notes"])
             model=AZURE_OPENAI_DEPLOYMENT,
             messages=[
                 {"role": "system", "content": system_prompt},
-               {"role": "user", "content": safe_notes},
+                {"role": "user", "content": raw_notes}
             ],
             temperature=0, 
         )
@@ -92,6 +93,56 @@ safe_notes = state.get("redacted_notes", state["raw_notes"])
     except Exception as e:
         print(f"⚠️ redactor_agent failed: {e}")
         return {"redacted_notes": raw_notes}
+
+
+def extractor_agent(state: ClinicalState) -> dict:
+    """
+    LLM Agent 1: Structured Entity Parsing.
+    Reads unstructured text and extracts diagnosis, year, and symptoms.
+    """
+    safe_notes = state.get("redacted_notes", state["raw_notes"])
+    
+    if not AZURE_CONFIGURED or client is None:
+        return {
+            "extracted_diagnosis": None,
+            "extracted_year": None,
+            "extracted_symptoms": [],
+        }
+        
+    system_prompt = """You are a clinical information extraction assistant.
+    Extract ONLY the following fields from the patient notes provided, and
+    respond with STRICT JSON only, no commentary, matching this exact schema:
+    {
+      "diagnosis": string or null,
+      "year": string or null (e.g. "2011"),
+      "symptoms": array of strings
+    }
+    Do not diagnose. Do not infer information not present in the text.
+    If a field is not mentioned, use null or an empty array."""
+    
+    try:
+        response = client.chat.completions.create(
+            model=AZURE_OPENAI_DEPLOYMENT,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": safe_notes},
+            ],
+            temperature=0,
+        )
+        parsed = json.loads(response.choices[0].message.content)
+        return {
+            "extracted_diagnosis": parsed.get("diagnosis"),
+            "extracted_year": parsed.get("year"),
+            "extracted_symptoms": parsed.get("symptoms", []),
+        }
+    except Exception as e:
+        print(f"⚠️ extractor_agent failed: {e}")
+        return {
+            "extracted_diagnosis": None,
+            "extracted_year": None,
+            "extracted_symptoms": [],
+        }
 
 def extractor_agent(state: ClinicalState) -> dict:
     """
