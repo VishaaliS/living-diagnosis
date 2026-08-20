@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch, getToken, getEmail, clearToken, getPatientId, setPatientId } from '@/lib/api';
-
+import FloatingCTA from '@/components/ui/floating-cta';
+import Navbar from '@/components/ui/navbar';
 interface CheckIn {
   id: string;
   date: string;
@@ -333,68 +334,7 @@ export default function DashboardPage() {
       className="flex flex-col min-h-screen"
       style={{ backgroundColor: 'var(--ld-background)', color: 'var(--ld-on-background)', fontFamily: 'var(--font-inter, Inter, sans-serif)' }}
     >
-      {/* ── Header ── */}
-      <header
-        style={{
-          backgroundColor: 'rgba(252,248,248,0.8)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid rgba(192,199,210,0.3)',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 50,
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 16px',
-            maxWidth: '1280px',
-            margin: '0 auto',
-            width: '100%',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            <a
-              href="#"
-              style={{
-                fontFamily: 'var(--font-space-grotesk, Space Grotesk, sans-serif)',
-                fontSize: '24px',
-                fontWeight: 700,
-                lineHeight: 1.2,
-                letterSpacing: '-0.02em',
-                color: 'var(--ld-on-surface)',
-                textDecoration: 'none',
-              }}
-            >
-              Living Diagnosis
-            </a>
-            <nav style={{ display: 'flex', gap: '16px' }}>
-              <a
-                href="#"
-                style={{
-                  color: 'var(--ld-primary)',
-                  fontWeight: 700,
-                  borderBottom: '2px solid var(--ld-primary)',
-                  paddingBottom: '4px',
-                  fontSize: '14px',
-                  textDecoration: 'none',
-                }}
-              >
-                Dashboard
-              </a>
-            </nav>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span style={{ fontSize: '14px', color: 'var(--ld-on-surface-variant)' }}>{email}</span>
-            <button className="btn-outline" style={{ fontSize: '14px' }} onClick={handleSignOut}>
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* ── Main ── */}
       <main
@@ -403,10 +343,10 @@ export default function DashboardPage() {
           width: '100%',
           maxWidth: '1280px',
           margin: '0 auto',
-          padding: '48px 16px',
+          padding: '128px 16px 96px 16px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '64px',
+          gap: '32px',
         }}
       >
         {/* Welcome */}
@@ -1096,16 +1036,7 @@ export default function DashboardPage() {
           )}
         </section>
 
-        {/* ── Run Diagnostic CTA ── */}
-        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '16px' }}>
-          <button
-            className="btn-ai"
-            style={{ fontSize: '18px', padding: '12px 32px' }}
-            onClick={() => router.push('/')}
-          >
-            Run a Diagnostic Analysis
-          </button>
-        </div>
+
       </main>
 
       {/* ── Footer ── */}
@@ -1151,6 +1082,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </footer>
+      <FloatingCTA />
     </div>
   );
 }

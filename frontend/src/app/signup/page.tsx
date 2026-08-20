@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { apiFetch, setToken } from '@/lib/api';
 import Navbar from '@/components/ui/navbar';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,6 +19,16 @@ export default function LoginPage() {
     setError('');
 
     try {
+      // 1. Register the user
+      await apiFetch(
+        '/auth/register',
+        {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+        }
+      );
+
+      // 2. Automatically log them in to get the token
       const data = await apiFetch<{ token: string; user_id: string; email: string }>(
         '/auth/login',
         {
@@ -29,7 +39,7 @@ export default function LoginPage() {
       setToken(data.user_id, data.email);
       router.push('/dashboard');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Login failed.');
+      setError(err instanceof Error ? err.message : 'Signup failed.');
     } finally {
       setLoading(false);
     }
@@ -55,13 +65,13 @@ export default function LoginPage() {
                                             className="mt-2 w-full rounded-2xl border border-transparent bg-[#f5f5f7] px-4 py-3.5 text-[15px] text-[#131313] outline-none transition placeholder:text-muted-foreground focus:border-gray-300 focus:bg-white"
                                             required name="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
                                     <div><label htmlFor="password" className="font-medium text-[#131313] text-sm">Password</label><input id="password" type="password" placeholder="Your password"
-                                            autoComplete="current-password"
+                                            autoComplete="new-password"
                                             className="mt-2 w-full rounded-2xl border border-transparent bg-[#f5f5f7] px-4 py-3.5 text-[15px] text-[#131313] outline-none transition placeholder:text-muted-foreground focus:border-gray-300 focus:bg-white"
                                             required name="password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
                                     {error && <p className="text-red-500 text-sm">{error}</p>}
                                 </div><button type="submit" disabled={loading}
                                     className="btn-accent-dark relative z-0 inline-flex w-fit items-center gap-2.5 py-1 pr-1 disabled:cursor-not-allowed disabled:opacity-60 mt-8 pl-5 sm:pl-6 bg-[#131313] text-white rounded-full transition hover:opacity-90"
-                                    tabIndex={0}><span className="font-bold text-sm tracking-wide">{loading ? 'SIGNING IN...' : 'SIGN IN'}</span><span
+                                    tabIndex={0}><span className="font-bold text-sm tracking-wide">{loading ? 'SIGNING UP...' : 'SIGN UP'}</span><span
                                         className="flex shrink-0 items-center justify-center rounded-full bg-[#D7FF3F] text-[#141210] size-9 sm:size-10 ml-2"><svg
                                             viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
                                             <path d="M4 12L12 4M12 4H6M12 4v6" fill="none" stroke="currentColor"
@@ -69,9 +79,9 @@ export default function LoginPage() {
                                             </path>
                                         </svg></span></button>
                                 <p className="mt-6 text-center text-sm text-gray-500">
-                                    Don't have an account?{' '}
-                                    <Link href="/signup" className="font-medium text-[#131313] hover:underline">
-                                        Sign Up
+                                    Already have an account?{' '}
+                                    <Link href="/login" className="font-medium text-[#131313] hover:underline">
+                                        Sign In
                                     </Link>
                                 </p>
                             </form>
@@ -81,9 +91,9 @@ export default function LoginPage() {
                         className="flex flex-1 flex-col justify-between rounded-3xl bg-[#f2f2f2] p-6 sm:p-8 lg:min-h-[32rem] lg:p-10 xl:p-12">
                         <div>
                             <div className="relative w-full">
-                                <h2 className="text-left text-[clamp(2rem,4vw,3rem)] font-medium leading-[1.12] tracking-tight text-[#131313] lg:text-[48px]">Access Your Medical Dashboard</h2>
+                                <h2 className="text-left text-[clamp(2rem,4vw,3rem)] font-medium leading-[1.12] tracking-tight text-[#131313] lg:text-[48px]">Join Living Diagnosis</h2>
                             </div>
-                            <p className="mt-4 max-w-md text-base leading-relaxed text-gray-500 sm:text-[17px]">Sign in to Living Diagnosis to manage your health records, view AI-driven insights, and track your wellness journey securely.</p>
+                            <p className="mt-4 max-w-md text-base leading-relaxed text-gray-500 sm:text-[17px]">Create your account to start managing your health records, viewing AI-driven insights, and tracking your wellness journey securely.</p>
                         </div>
                         <div className="mt-10 lg:mt-12">
                             <p className="text-sm text-gray-500">Follow Us:</p>

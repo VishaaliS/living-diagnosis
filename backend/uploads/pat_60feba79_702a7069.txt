@@ -1,0 +1,30 @@
+SYNTHETIC / DEMO MEDICAL RECORD
+NOT A REAL PRESCRIPTION — FOR HACKATHON TESTING ONLY
+
+Patient Name: Arjun Mehta
+Age: 29
+Date: 18 August 2010
+
+Attending Physician: Dr. Rohan Kapoor
+
+Clinical Assessment:
+Patient presents with recurrent depressive symptoms including low mood,
+loss of interest, fatigue, sleep disturbance, and difficulty concentrating,
+with a documented history of episodic mood elevation.
+
+Historical Diagnosis:
+Bipolar Disorder with depressive symptoms
+
+Diagnostic Framework:
+DSM-IV-TR
+
+Plan:
+- Continue psychiatric follow-up and clinical monitoring.
+- Medication details intentionally omitted from this synthetic demo document.
+
+Doctor: Dr. Rohan Kapoor
+Signature: DEMO ONLY
+
+IMPORTANT:
+This is entirely fictional synthetic data created for software demonstration.
+It must not be used for diagnosis, treatment, prescribing, or real medical care.

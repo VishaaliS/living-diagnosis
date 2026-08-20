@@ -705,6 +705,57 @@ def analyze(request: AnalyzeRequest):
         warnings=warnings,
     )
 
+@app.post("/api/analyze-file", response_model=AnalyzeResponse)
+async def analyze_file(file: UploadFile = File(...)):
+    """
+    Accepts an ad-hoc file upload, extracts its text, and runs the same
+    analysis as /api/analyze without requiring auth or saving to disk.
+    """
+    contents = await file.read()
+    ext = Path(file.filename).suffix.lower() if file.filename else ""
+    
+    raw_text = ""
+    # Extract text based on file type
+    if ext == ".txt":
+        raw_text = contents.decode("utf-8", errors="replace")
+    elif ext == ".pdf":
+        try:
+            import PyPDF2
+            import io
+            reader = PyPDF2.PdfReader(io.BytesIO(contents))
+            pages = [page.extract_text() or "" for page in reader.pages]
+            raw_text = "\n".join(pages)
+        except ImportError:
+            raise HTTPException(status_code=500, detail="PyPDF2 is not installed.")
+    elif ext in [".jpeg", ".jpg", ".png", ".webp"]:
+        import base64
+        base64_image = base64.b64encode(contents).decode('utf-8')
+        media_type = f"image/{ext[1:]}" if ext != ".jpg" else "image/jpeg"
+        
+        if not AZURE_CONFIGURED or client is None:
+            raise HTTPException(status_code=503, detail="Azure OpenAI is not configured for image OCR.")
+            
+        try:
+            response = client.chat.completions.create(
+                model=AZURE_OPENAI_DEPLOYMENT,
+                messages=[
+                    {"role": "system", "content": "You are a clinical OCR assistant. Accurately transcribe all text, clinical notes, and handwriting from the image. Output ONLY the transcribed text."},
+                    {"role": "user", "content": [{"type": "text", "text": "Extract text:"}, {"type": "image_url", "image_url": {"url": f"data:{media_type};base64,{base64_image}"}}]}
+                ],
+                max_completion_tokens=2000,
+            )
+            raw_text = response.choices[0].message.content or ""
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to OCR image: {str(e)}")
+    else:
+        raise HTTPException(status_code=400, detail=f"Unsupported file type: {ext}")
+
+    if not raw_text.strip():
+        raise HTTPException(status_code=422, detail="Could not extract any content from the document.")
+
+    # Pass the extracted text into the standard analyze function
+    return analyze(AnalyzeRequest(patient_notes=raw_text))
+
 
 # ─────────────────────────────────────────────────────────────────
 # UTILITY ENDPOINTS
@@ -1012,8 +1063,11 @@ async def analyze_document(
         raise HTTPException(status_code=404, detail="File not found in uploads directory.")
 
     ext = file_path.suffix.lower()
+    raw_text = ""
+    base64_image = None
+    media_type = None
 
-    # ── Extract text ────────────────────────────────────────────────
+    # ── Extract text or encode image ────────────────────────────────
     try:
         if ext == ".txt":
             raw_text = file_path.read_text(encoding="utf-8", errors="replace")
@@ -1028,10 +1082,15 @@ async def analyze_document(
             reader = PyPDF2.PdfReader(str(file_path))
             pages = [page.extract_text() or "" for page in reader.pages]
             raw_text = "\n".join(pages)
+        elif ext in [".jpeg", ".jpg", ".png", ".webp"]:
+            import base64
+            with open(file_path, "rb") as image_file:
+                base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+            media_type = f"image/{ext[1:]}" if ext != ".jpg" else "image/jpeg"
         else:
             raise HTTPException(
                 status_code=400,
-                detail=f"Unsupported file type: {ext}. Only PDF and TXT are supported for analysis."
+                detail=f"Unsupported file type: {ext}. Only PDF, TXT, and Images (JPEG, PNG, WEBP) are supported for analysis."
             )
     except HTTPException:
         raise
@@ -1041,10 +1100,10 @@ async def analyze_document(
             detail=f"Failed to read document: {exc}"
         )
 
-    if not raw_text.strip():
+    if not raw_text.strip() and not base64_image:
         raise HTTPException(
             status_code=422,
-            detail="Could not extract any text from the document. The file may be empty or image-based."
+            detail="Could not extract any content from the document. The file may be empty."
         )
 
     # ── Call Azure OpenAI ───────────────────────────────────────────
@@ -1067,15 +1126,28 @@ async def analyze_document(
     )
 
     try:
+        if base64_image:
+            user_content = [
+                {"type": "text", "text": "Clinical document:"},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:{media_type};base64,{base64_image}"
+                    }
+                }
+            ]
+        else:
+            user_content = f"Clinical document:\n\n{raw_text[:6000]}"
+
         response = client.chat.completions.create(
             model=AZURE_OPENAI_DEPLOYMENT,
             response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Clinical document:\n\n{raw_text[:6000]}"},
+                {"role": "user", "content": user_content},
             ],
             temperature=0.1,
-            max_tokens=800,
+            max_completion_tokens=800,
         )
         raw_json = response.choices[0].message.content or "{}"
         extraction = json.loads(raw_json)
@@ -1084,7 +1156,7 @@ async def analyze_document(
     except Exception as exc:
         raise HTTPException(
             status_code=500,
-            detail=f"Could not analyze document. Please try again. (Error: {type(exc).__name__})"
+            detail=f"Could not analyze document. Please try again. (Error: {str(exc)})"
         )
 
     # ── Normalise output ────────────────────────────────────────────

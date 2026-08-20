@@ -46,5 +46,13 @@
     "mood_score": 6,
     "symptom_notes": "sdfasdfa",
     "created_at": "2026-08-19T18:24:48.481298Z"
+  },
+  {
+    "id": "chk_add773b4",
+    "user_id": "user_c4fe53db",
+    "date": "2026-08-20",
+    "mood_score": 7,
+    "symptom_notes": "i feel very depressed ",
+    "created_at": "2026-08-20T02:46:09.025172Z"
   }
 ]

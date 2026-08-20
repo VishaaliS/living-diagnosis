@@ -8,3 +8,4 @@ pydantic
 numpy
 langgraph
 PyPDF2
+PyPDF2
