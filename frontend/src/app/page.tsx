@@ -1,8 +1,23 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import LoginPage from './login/page';
 
 export default function LandingPage() {
+  const router = useRouter();
+  const [transition, setTransition] = useState({ active: false, x: 0, y: 0 });
+
+  const handleGetStartedClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setTransition({ active: true, x: e.clientX, y: e.clientY });
+    setTimeout(() => {
+      router.push('/login');
+      setTimeout(() => setTransition({ active: false, x: 0, y: 0 }), 100);
+    }, 1200);
+  };
   return (
     <>
       <style dangerouslySetInnerHTML={{
@@ -15,6 +30,11 @@ export default function LandingPage() {
 
           .font-space-mono {
               font-family: 'Space Mono', monospace;
+          }
+
+          @keyframes circleReveal {
+              0% { clip-path: circle(0px at var(--click-x) var(--click-y)); }
+              100% { clip-path: circle(150vmax at var(--click-x) var(--click-y)); }
           }
 
           .hero-bg {
@@ -69,7 +89,7 @@ export default function LandingPage() {
                       <button className="bg-white/20 backdrop-blur-sm text-white border border-white/30 px-8 py-3.5 rounded-full text-sm font-medium font-space-mono tracking-widest uppercase hover:bg-white/30 transition-colors shadow-lg">
                           Talk to Us
                       </button>
-                      <Link href="/login" className="bg-[#d4ff63] text-black pl-8 pr-2 py-2 rounded-full flex items-center gap-4 text-sm font-medium font-space-mono tracking-widest uppercase hover:bg-[#c2f04b] transition-colors shadow-lg group">
+                      <Link href="/login" onClick={handleGetStartedClick} className="bg-[#d4ff63] text-black pl-8 pr-2 py-2 rounded-full flex items-center gap-4 text-sm font-medium font-space-mono tracking-widest uppercase hover:bg-[#c2f04b] transition-colors shadow-lg group">
                           <span>Get Started</span>
                           <div className="bg-black text-white w-10 h-10 rounded-full flex items-center justify-center transform group-hover:scale-105 transition-transform">
                               <svg fill="none" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
@@ -104,6 +124,20 @@ export default function LandingPage() {
               </div>
           </main>
       </div>
+      {transition.active && (
+        <div
+          className="fixed inset-0 z-[9999] pointer-events-none bg-white overflow-hidden"
+          style={{
+            '--click-x': `${transition.x}px`,
+            '--click-y': `${transition.y}px`,
+            animation: 'circleReveal 1.2s cubic-bezier(0.76, 0, 0.24, 1) forwards'
+          } as React.CSSProperties}
+        >
+          <div className="w-full h-full overflow-y-auto">
+            <LoginPage />
+          </div>
+        </div>
+      )}
     </>
   );
 }
