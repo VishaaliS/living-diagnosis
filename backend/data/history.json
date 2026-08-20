@@ -154,5 +154,18 @@
     "semantic_drift_score": null,
     "explanation": null,
     "analyzed_at": "2026-08-19T21:58:27.895051Z"
+  },
+  {
+    "id": "hist_91141226",
+    "user_id": "user_3f9ebbe4",
+    "patient_id": "pat_6a8b332c",
+    "diagnosis": "Asperger's Disorder",
+    "freshness_score": 31,
+    "score_color": null,
+    "score_breakdown": null,
+    "guideline_matched": true,
+    "semantic_drift_score": null,
+    "explanation": null,
+    "analyzed_at": "2026-08-19T22:20:19.533246Z"
   }
 ]
