@@ -7,7 +7,15 @@
     "primary_diagnosis": null,
     "diagnosis_year": null,
     "medications": [],
-    "documents": [],
+    "documents": [
+      {
+        "filename": "WhatsApp Image 2026-08-20 at 08.28.55.jpeg",
+        "saved_as": "pat_e7b5d922_0cbefe46.jpeg",
+        "path": "C:\\Users\\Yashwanth\\Phoenix Hackathon\\living-diagnosis\\backend\\uploads\\pat_e7b5d922_0cbefe46.jpeg",
+        "uploaded_at": "2026-08-20T04:30:39.191258Z",
+        "uploaded_by": "user_5b7421e6"
+      }
+    ],
     "created_at": "2026-08-19T13:01:11.810104Z"
   },
   {

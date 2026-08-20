@@ -21,7 +21,7 @@ export default function FloatingCTA() {
     >
       <div className="absolute inset-[-4px] rounded-full backdrop-blur-sm bg-white/20 z-[-1]"></div>
       <button
-        onClick={() => router.push('/')}
+        onClick={() => router.push('/analysis')}
         className="inline-flex items-center gap-3 bg-[#D7FF3F] text-[#0B0B0B] rounded-full py-3.5 pl-6 pr-2 shadow-[0_8px_32px_rgba(0,0,0,0.15)] font-bold text-sm uppercase tracking-wide transition-transform duration-200 hover:scale-[1.03] active:scale-[0.97]"
         style={{ fontFamily: "'Space Grotesk', sans-serif" }}
       >
